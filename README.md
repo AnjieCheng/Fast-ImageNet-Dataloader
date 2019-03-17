@@ -6,7 +6,8 @@ Requirements:
 * [LMDB][]: `pip install lmdb`
 * [OpenCV][]: `pip install opencv-python`
 * [Protobuf][]: `conda install protobuf`
-* [python-prctl][]: clone, `sudo apt-get install build-essential libcap-dev` and `python setup.py build`
+* [Prctl][]: clone, `sudo apt-get install build-essential libcap-dev` and `python setup.py build`
+
 
 [tensorpack]: https://github.com/ppwwyyxx/tensorpack
 [lmdb]: https://lmdb.readthedocs.io/en/release/
