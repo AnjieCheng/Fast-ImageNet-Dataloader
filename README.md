@@ -1,8 +1,5 @@
 
-A plug-in ImageNet DataLoader for PyTorch. Uses tensorpack's [sequential
-loading][seq] to load fast even if you're using a HDD. 
-
-[seq]: http://tensorpack.readthedocs.io/en/latest/tutorial/efficient-dataflow.html#sequential-read
+A fast data loader for Imagenet on pytorch.
 
 Install
 -------
@@ -11,9 +8,9 @@ Requirements:
 
 * [Tensorpack][]: clone and `pip install -e .`
 * [LMDB][]: `pip install lmdb`
-* [TQDM][]: `pip install tqdm`
-* [OpenCV][]: `conda install opencv`
+* [OpenCV][]: `pip install opencv-python`
 * [Protobuf][]: `conda install protobuf`
+* [python-prctl][]: clone, `sudo apt-get install build-essential libcap-dev` and `python setup.py build`
 
 [tensorpack]: https://github.com/ppwwyyxx/tensorpack
 [lmdb]: https://lmdb.readthedocs.io/en/release/
@@ -21,56 +18,46 @@ Requirements:
 [opencv]: https://pypi.python.org/pypi/opencv-python
 [Protobuf]: https://github.com/google/protobuf
 
-If you use pip's editable install, you can fix bugs I have probably introduced:
-
-```
-git clone https://github.com/BayesWatch/sequential-imagenet-dataloader.git
-cd sequential-imagenet-dataloader
-pip install -e .
-```
-
-To start, you must set the environment variable `IMAGENET` to point to
-wherever you have saved the ILSVRC2012 dataset. You must also set the
-`TENSORPACK_DATASET` environment variable, because tensorpack may download
-some things itself.
+`Tensorpack` version > 0.9 is currently NOT supported.
+Note thatome prebuilt opencv is much slower than others. Remember to check with [this script](https://github.com/tensorpack/benchmarks/blob/master/ImageNet/benchmark-opencv-resize.py) and make sure it prints < 1s.
 
 ### Preprocessing
+
+To start, set the environment variable `IMAGENET` to the ILSVRC2012 
+dataset. `TENSORPACK_DATASET` should also be set (for tensorpack).
+
+```script
+export IMAGENET='/mnt/work/data/raw-data/'
+python preprocess_sequential.py
+```
 
 Before being able to train anything, you have to run the preprocessing
 script `preprocess_sequential.py` to create the huge LMDB binary files.
 They will get put in wherever your `IMAGENET` environment variable is, and
 they will take up 140G for train, plus more for val.
 
-Usage
------
-
-Wherever the `DataLoader` is defined in your Pytorch code, replaced that
-with `imagenet_seq.data.Loader`; although you can't call it with exactly
-the same arguments. For an example, this would be the substitution in the
-[PyTorch ImageNet example][imagenet]:
+### Usage
 
 ```
-    #train_loader = torch.utils.data.DataLoader(
-    #    train_dataset, batch_size=args.batch_size, shuffle=(train_sampler is None),
-    #    num_workers=args.workers, pin_memory=True, sampler=train_sampler)
-    train_loader = ImagenetLoader('train', batch_size=args.batch_size, num_workers=args.workers)
+train_loader = LMDBLoader('train', batch_size=args.batch_size, num_workers=32, shuffle=True, cuda=True)
+valid_loader = LMDBLoader('val', batch_size=args.batch_size, num_workers=32, shuffle=False, cuda=True) 
+
 ```
 
-You may need to tune the number of workers to use to get best results.
 
-Experiments
------------
+### Disclaimer
 
-Running the [PyTorch ImageNet Example][imagenet] on the server I work on
-that has no SSD, but a set of 4 Titan X GPUs, I get an average
-minibatch speed of 5.3s. Using this iterator to feed examples, I'm able to
-get about 0.59s per minibatch, so 54 minutes per epoch; 90 epochs should
-take about 73 hours, and that's enough to get results. A resnet-18
-converged to 69% top-1 and 89% top-5, which [appears to be the
-standard][resnet_original].
+Code mainly from [sequential-imagenet-dataloader](https://github.com/BayesWatch/sequential-imagenet-dataloader), and [Tensorpack](https://github.com/tensorpack/tensorpack) examples.
 
-The Titan Xs still look a little hungry if we're running on all four, but
-it's fast enough to work with.
+### Reference
 
-[imagenet]: https://github.com/pytorch/examples/tree/master/imagenet
-[resnet_original]: https://github.com/HolmesShuan/ResNet-18-Caffemodel-on-ImageNet
+[Data loader takes a lot of time for every nth iteration](https://discuss.pytorch.org/t/data-loader-takes-a-lot-of-time-for-every-nth-iteration/10831)
+
+[First batch of Imagenet training is slow with sequential loading](https://discuss.pytorch.org/t/first-batch-of-imagenet-training-is-slow-with-sequential-loading/11464)
+
+[How to prefetch data when processing with GPU?](https://discuss.pytorch.org/t/how-to-prefetch-data-when-processing-with-gpu/548)
+
+[How to speed up the data loader](https://discuss.pytorch.org/t/how-to-speed-up-the-data-loader/13740)
+
+[Fast data loader for Imagenet](https://discuss.pytorch.org/t/fast-data-loader-for-imagenet/988/14)
+

@@ -7,7 +7,8 @@ from tensorpack.dataflow import *
 if __name__ == '__main__':
     class BinaryILSVRC12(dataset.ILSVRC12Files):
         def get_data(self):
-            for fname, label in super(BinaryILSVRC12, self).get_data():
+            # for fname, label in super(BinaryILSVRC12, self).get_data():
+            for fname, label in super(BinaryILSVRC12, self).__iter__():
                 with open(fname, 'rb') as f:
                     jpeg = f.read()
                 jpeg = np.asarray(bytearray(jpeg), dtype='uint8')

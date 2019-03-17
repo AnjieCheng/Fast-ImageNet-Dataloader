@@ -92,7 +92,6 @@ numpy_type_map = {
 
 
 def default_collate(batch):
-    "Puts each data field into a tensor with outer dimension batch size"
 
     error_msg = "batch must contain tensors, numbers, dicts or lists; found {}"
     elem_type = type(batch[0])
@@ -132,29 +131,7 @@ def default_collate(batch):
     raise TypeError((error_msg.format(type(batch[0]))))
 
 
-class Loader(object):
-    """
-    Data loader. Combines a dataset and a sampler, and provides
-    single- or multi-process iterators over the dataset.
-
-    Arguments:
-        mode (str, required): mode of dataset to operate in, one of ['train', 'val']
-        batch_size (int, optional): how many samples per batch to load
-            (default: 1).
-        shuffle (bool, optional): set to ``True`` to have the data reshuffled
-            at every epoch (default: False).
-        num_workers (int, optional): how many subprocesses to use for data
-            loading. 0 means that the data will be loaded in the main process
-            (default: 0)
-        cache (int, optional): cache size to use when loading data,
-        drop_last (bool, optional): set to ``True`` to drop the last incomplete batch,
-            if the dataset size is not divisible by the batch size. If ``False`` and
-            the size of dataset is not divisible by the batch size, then the last batch
-            will be smaller. (default: False)
-        cuda (bool, optional): set to ``True`` and the PyTorch tensors will get preloaded
-            to the GPU for you (necessary because this lets us to uint8 conversion on the 
-            GPU, which is faster).
-    """
+class LMDBLoader(object):
 
     def __init__(self, mode, batch_size=256, shuffle=False, num_workers=25, cache=50000,
             collate_fn=default_collate,  drop_last=False, cuda=False):
@@ -163,8 +140,8 @@ class Loader(object):
 
         # load the lmdb if we can find it
         lmdb_loc = os.path.join(os.environ['IMAGENET'],'ILSVRC-%s.lmdb'%mode)
-        ds = td.LMDBData(lmdb_loc, shuffle=False)
-        ds = td.LocallyShuffleData(ds, cache)
+        ds = td.LMDBData(lmdb_loc, shuffle=shuffle)
+        # ds = td.LocallyShuffleData(ds, cache)
         ds = td.PrefetchData(ds, 5000, 1)
         ds = td.LMDBDataPoint(ds)
         ds = td.MapDataComponent(ds, lambda x: cv2.imdecode(x, cv2.IMREAD_COLOR), 0)
@@ -184,7 +161,7 @@ class Loader(object):
                 # images come out as uint8, which are faster to copy onto the gpu
                 x = torch.ByteTensor(x).cuda()
                 y = torch.IntTensor(y).cuda()
-                # but once they're on the gpu, we'll need them in 
+                # but once they're on the gpu, we'll need them in
                 yield uint8_to_float(x), y.long()
             else:
                 yield uint8_to_float(torch.ByteTensor(x)), torch.IntTensor(y).long()
@@ -198,6 +175,6 @@ def uint8_to_float(x):
 
 if __name__ == '__main__':
     from tqdm import tqdm
-    dl = Loader('train', cuda=True)
+    dl = LMDBLoader('train', cuda=True)
     for x in tqdm(dl, total=len(dl)):
         pass
