@@ -1,9 +1,5 @@
-
-A fast data loader for Imagenet on pytorch.
-
 Install
 -------
-
 Requirements:
 
 * [Tensorpack][]: clone and `pip install -e .`
@@ -31,11 +27,6 @@ export IMAGENET='/mnt/work/data/raw-data/'
 python preprocess_sequential.py
 ```
 
-Before being able to train anything, you have to run the preprocessing
-script `preprocess_sequential.py` to create the huge LMDB binary files.
-They will get put in wherever your `IMAGENET` environment variable is, and
-they will take up 140G for train, plus more for val.
-
 ### Usage
 
 ```
@@ -43,7 +34,10 @@ train_loader = LMDBLoader('train', batch_size=args.batch_size, num_workers=32, s
 valid_loader = LMDBLoader('val', batch_size=args.batch_size, num_workers=32, shuffle=False, cuda=True) 
 
 ```
-
+## TODO 
+- [ ] Image Normalization
+- [ ] Support HDF5 format
+- [ ] Tensorpack version > 0.9
 
 ### Disclaimer
 
@@ -52,12 +46,8 @@ Code mainly from [sequential-imagenet-dataloader](https://github.com/BayesWatch/
 ### Reference
 
 [Data loader takes a lot of time for every nth iteration](https://discuss.pytorch.org/t/data-loader-takes-a-lot-of-time-for-every-nth-iteration/10831)
-
 [First batch of Imagenet training is slow with sequential loading](https://discuss.pytorch.org/t/first-batch-of-imagenet-training-is-slow-with-sequential-loading/11464)
-
 [How to prefetch data when processing with GPU?](https://discuss.pytorch.org/t/how-to-prefetch-data-when-processing-with-gpu/548)
-
 [How to speed up the data loader](https://discuss.pytorch.org/t/how-to-speed-up-the-data-loader/13740)
-
 [Fast data loader for Imagenet](https://discuss.pytorch.org/t/fast-data-loader-for-imagenet/988/14)
 
