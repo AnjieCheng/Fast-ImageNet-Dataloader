@@ -17,7 +17,7 @@ Requirements:
 
 
 `Tensorpack` version > 0.9 is currently NOT supported.
-Note thatome prebuilt opencv is much slower than others. 
+Note that some prebuilt `opencv` is much slower than others. 
 Remember to check with [this script](https://github.com/tensorpack/benchmarks/blob/master/ImageNet/benchmark-opencv-resize.py) and make sure it prints < 1s.
 
 ### Preprocessing
